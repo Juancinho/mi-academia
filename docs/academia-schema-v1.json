@@ -1,0 +1,367 @@
+{
+  "$defs": {
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "pattern": "^[\\w.:-]{1,150}$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "locator": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Locator",
+          "type": "string"
+        },
+        "excerpt": {
+          "default": "",
+          "maxLength": 20000,
+          "title": "Excerpt",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "Knowledge": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[\\w.:-]{1,150}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "content": {
+          "maxLength": 50000,
+          "minLength": 1,
+          "title": "Content",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "concepto",
+            "hecho",
+            "procedimiento",
+            "relacion",
+            "competencia"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "epistemic": {
+          "enum": [
+            "verificable",
+            "interpretacion",
+            "opinion",
+            "cambiante"
+          ],
+          "title": "Epistemic",
+          "type": "string"
+        },
+        "as_of": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "As Of"
+        },
+        "recheck_on": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recheck On"
+        },
+        "topics": {
+          "items": {
+            "maxLength": 300,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Topics",
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "tasks": {
+          "items": {
+            "$ref": "#/$defs/Task"
+          },
+          "maxItems": 20,
+          "title": "Tasks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "content",
+        "kind",
+        "epistemic",
+        "evidence"
+      ],
+      "title": "Knowledge",
+      "type": "object"
+    },
+    "Relation": {
+      "additionalProperties": false,
+      "properties": {
+        "from_id": {
+          "pattern": "^[\\w.:-]{1,150}$",
+          "title": "From Id",
+          "type": "string"
+        },
+        "to_id": {
+          "pattern": "^[\\w.:-]{1,150}$",
+          "title": "To Id",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "explanation": {
+          "default": "",
+          "maxLength": 10000,
+          "title": "Explanation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "from_id",
+        "to_id",
+        "label"
+      ],
+      "title": "Relation",
+      "type": "object"
+    },
+    "Session": {
+      "additionalProperties": false,
+      "properties": {
+        "external_id": {
+          "pattern": "^[\\w.:-]{1,150}$",
+          "title": "External Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "occurred_at": {
+          "format": "date-time",
+          "title": "Occurred At",
+          "type": "string"
+        },
+        "summary": {
+          "maxLength": 50000,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "original_text": {
+          "default": "",
+          "maxLength": 500000,
+          "title": "Original Text",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "knowledge": {
+          "items": {
+            "$ref": "#/$defs/Knowledge"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "title": "Knowledge",
+          "type": "array"
+        },
+        "relations": {
+          "items": {
+            "$ref": "#/$defs/Relation"
+          },
+          "maxItems": 1000,
+          "title": "Relations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "external_id",
+        "title",
+        "occurred_at",
+        "summary",
+        "sources",
+        "knowledge"
+      ],
+      "title": "Session",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[\\w.:-]{1,150}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "chatgpt",
+            "libro",
+            "articulo",
+            "web",
+            "video",
+            "personal",
+            "otro"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "citation": {
+          "default": "",
+          "maxLength": 10000,
+          "title": "Citation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "kind"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Task": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "recuperacion",
+            "explicacion",
+            "razonamiento",
+            "comparacion",
+            "analisis",
+            "demostracion",
+            "practica"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "prompt": {
+          "maxLength": 50000,
+          "minLength": 1,
+          "title": "Prompt",
+          "type": "string"
+        },
+        "expected_answer": {
+          "maxLength": 50000,
+          "minLength": 1,
+          "title": "Expected Answer",
+          "type": "string"
+        },
+        "rubric": {
+          "items": {
+            "maxLength": 300,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Rubric",
+          "type": "array"
+        }
+      },
+      "required": [
+        "mode",
+        "prompt",
+        "expected_answer",
+        "rubric"
+      ],
+      "title": "Task",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "sessions": {
+      "items": {
+        "$ref": "#/$defs/Session"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "title": "Sessions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "sessions"
+  ],
+  "title": "ImportBundle",
+  "type": "object"
+}
