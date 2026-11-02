@@ -11,3 +11,12 @@ exports/
 *.sqlite*
 *.db*
 .streamlit/secrets.toml
+node_modules/
+cloud/dist/
+cloud/.next/
+cloud/.vinext/
+cloud/.wrangler/
+cloud/.sites-runtime/
+cloud/outputs/
+cloud/next-env.d.ts
+cloud/*.tsbuildinfo

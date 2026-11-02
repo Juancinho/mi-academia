@@ -1,0 +1,11 @@
+export const validate_academy_status: { (value:any): boolean; errors?: any };
+export const validate_search_knowledge: { (value:any): boolean; errors?: any };
+export const validate_get_knowledge: { (value:any): boolean; errors?: any };
+export const validate_get_due_reviews: { (value:any): boolean; errors?: any };
+export const validate_get_connections: { (value:any): boolean; errors?: any };
+export const validate_get_import_schema: { (value:any): boolean; errors?: any };
+export const validate_import: { (value:any): boolean; errors?: any };
+export const validate_submit_answer: { (value:any): boolean; errors?: any };
+export const validate_record_review: { (value:any): boolean; errors?: any };
+export const validate_mark_understanding: { (value:any): boolean; errors?: any };
+export const validate_connect_knowledge: { (value:any): boolean; errors?: any };

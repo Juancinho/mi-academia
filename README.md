@@ -2,6 +2,18 @@
 
 Un sistema personal de aprendizaje continuo, local y gratuito. Guarda lo aprendido con sus fuentes, conecta ideas de cualquier área y reúne evidencia de lo que puedes recordar, explicar o aplicar.
 
+## Acceso desde ChatGPT y el móvil
+
+La [academia privada alojada](https://mi-academia-juancinho.juan-el-g.chatgpt.site) está disponible sin mantener el ordenador encendido. Inicia sesión con la cuenta de ChatGPT propietaria del sitio.
+
+Su conexión **Mi Academia** está creada y figura instalada en esa cuenta. En un chat nuevo, selecciónala con `@` y prueba: «Usa Mi Academia y dime qué tengo pendiente de repasar». Las herramientas pueden necesitar un chat nuevo para aparecer; la disponibilidad depende de tu cuenta y del entorno. No se presupone uso automático en todos los chats.
+
+La implementación alojada está en [cloud/](cloud/README.md), con búsqueda, registro de sesiones, evidencias, evaluaciones, FSRS y respaldos. El [detalle de la conexión](docs/github-y-chatgpt.md) explica su uso y límites.
+
+La nube y el SQLite local son bibliotecas independientes: no hay sincronización automática. Para trasladar material usa las sesiones JSON. Los historiales FSRS tienen formatos distintos y no se migran automáticamente entre motores. El código es público; los datos alojados solo son accesibles para la cuenta propietaria.
+
+## Versión local
+
 El MVP está construido con **Python, SQLite, Streamlit, Pydantic y py-fsrs**. No requiere cuenta, claves API ni servicios de pago. Tras instalar las dependencias funciona sin conexión; los enlaces a fuentes externas necesitan conexión si los abres.
 
 ![Dashboard del MVP con la sesión de demostración](docs/screenshots/dashboard.jpg)
@@ -188,7 +200,7 @@ Para compartir el código o consultarlo desde otro chat, consulta [GitHub y acce
 
 Pensado para una persona en su equipo, accesible en `127.0.0.1`. No incorpora autenticación, sincronización entre dispositivos ni publicación en Internet. El archivo SQLite contiene tus notas en texto legible y queda fuera del control de versiones junto con las copias. Usa las protecciones y copias de tu equipo según tus necesidades.
 
-La extracción semántica se hace con el prompt y la importación, o manualmente. No hay IA conectada, corrector automático, búsqueda remota de fuentes ni notificaciones activas. La edición de conocimientos versionados, archivado, fusiones semánticas y optimización personalizada de FSRS se dejan para iteraciones posteriores. Los datos originales y las respuestas se conservan para que esas ampliaciones sean posibles.
+En la versión local, la extracción semántica se hace con el prompt y la importación, o manualmente. No hay corrector automático, búsqueda remota de fuentes ni notificaciones activas. La conexión alojada con ChatGPT se describe al principio de este documento. La edición de conocimientos versionados, archivado, fusiones semánticas y optimización personalizada de FSRS se dejan para iteraciones posteriores. Los datos originales y las respuestas se conservan para que esas ampliaciones sean posibles.
 
 ## Referencias técnicas
 
