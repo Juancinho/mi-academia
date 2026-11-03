@@ -15,6 +15,8 @@ El [endpoint MCP](https://mi-academia-juancinho.juan-el-g.chatgpt.site/mcp) perm
 
 ## Herramientas
 
+La conexión incorpora [captura proactiva de conocimientos](captura-proactiva.md): cuando ChatGPT carga Mi Academia, se le indica que trate de guardar aprendizaje sustancial con fuentes y ejercicios sin esperar una petición de guardado. Se respetan las autorizaciones y confirmaciones de cada chat. Las 11 reglas se pueden consultar también dentro de la web, en Conectar ChatGPT.
+
 - Estado de la academia, búsqueda de conocimientos, detalle con fuentes, ejercicios pendientes y conexiones.
 - Contrato de importación, previsualización y registro de sesiones elegidas.
 - Fijar respuestas, obtener referencia y rúbrica y registrar puntuaciones confirmadas por el usuario.

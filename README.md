@@ -8,6 +8,8 @@ La [academia privada alojada](https://mi-academia-juancinho.juan-el-g.chatgpt.si
 
 Su conexión **Mi Academia** está creada y figura instalada en esa cuenta. En un chat nuevo, selecciónala con `@` y prueba: «Usa Mi Academia y dime qué tengo pendiente de repasar». Las herramientas pueden necesitar un chat nuevo para aparecer; la disponibilidad depende de tu cuenta y del entorno. No se presupone uso automático en todos los chats.
 
+La conexión incluye las [reglas de captura proactiva](docs/captura-proactiva.md) del propietario para intentar registrar aprendizaje sustancial sin pedir «guárdalo» en cada ocasión, manteniendo fuentes, ejercicios y el estado pendiente de consolidar.
+
 La implementación alojada está en [cloud/](cloud/README.md), con búsqueda, registro de sesiones, evidencias, evaluaciones, FSRS y respaldos. El [detalle de la conexión](docs/github-y-chatgpt.md) explica su uso y límites.
 
 La nube y el SQLite local son bibliotecas independientes: no hay sincronización automática. Para trasladar material usa las sesiones JSON. Los historiales FSRS tienen formatos distintos y no se migran automáticamente entre motores. El código es público; los datos alojados solo son accesibles para la cuenta propietaria.

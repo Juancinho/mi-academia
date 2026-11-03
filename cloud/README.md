@@ -10,6 +10,14 @@ Versión alojada del proyecto Mi Academia: biblioteca persistente, importación 
 - Al publicar con la capacidad MCP, Sites crea una conexión privada instalable en ChatGPT. Su presencia en un chat depende de la cuenta y de los permisos disponibles. No se garantiza uso automático en todos los chats ni acceso a conversaciones no aportadas.
 - El SQLite local y D1 son bibliotecas independientes. No hay sincronización automática. Importa explícitamente las sesiones que quieras conservar en la nube; a partir de ahí usa esa biblioteca como referencia desde ChatGPT y desde la web.
 
+## Captura proactiva
+
+La conexión entrega al cliente las 11 reglas de captura del propietario mediante las instrucciones de inicialización y descubrimiento MCP. También anuncia la captura proactiva en las herramientas de búsqueda, previsualización e importación. Las reglas se mantienen en `lib/capture-policy.ts` y se pueden consultar en Conectar ChatGPT dentro de la web.
+
+Cuando la conexión está cargada, se indica a ChatGPT que responda normalmente y trate de guardar aprendizaje sustancial sin esperar una petición «guárdalo», conservando fuentes, evitando duplicados y creando ejercicios adecuados. Se excluyen trivia y conversaciones operativas. El registro inicial sigue siendo Registrado, pendiente de consolidar. No se atribuye dominio y la nota de un repaso sigue requiriendo confirmación expresa.
+
+Esto configura el comportamiento de la conexión, no un observador de todas las conversaciones de la cuenta. El resultado depende de las herramientas, permisos y modelo del chat. No anula confirmaciones de la plataforma ni permite afirmar que se ha guardado una sesión si la herramienta falla.
+
 ## Datos e importación
 
 El contrato es el JSON Schema v1 del MVP Python. Se admiten los siete tipos de evaluación y etiquetas libres. La versión alojada limita un lote a 100 conocimientos, una sesión a 900 KB y una transacción a 900 elementos SQL. Los conflictos de external_id rechazan el lote completo. Los duplicados exactos agregan procedencia sin reiniciar los repasos.
@@ -39,6 +47,6 @@ Para vista previa usa `npm run dev`. La configuración portable simula una cuent
 
 ## Verificación
 
-18 pruebas Node con SQLite temporal cubren el contrato, los siete modos, importación atómica e idempotente, procedencia al deduplicar, estados, FSRS-6 y persistencia, respuestas fijadas, ayuda, confirmación, concurrencia, autorización, MCP y restauración. La base de pruebas nunca es la base personal alojada.
+20 pruebas Node con SQLite temporal cubren el contrato, los siete modos, importación atómica e idempotente, procedencia al deduplicar, estados, FSRS-6 y persistencia, respuestas fijadas, ayuda, confirmación, concurrencia, autorización, MCP y restauración. La base de pruebas nunca es la base personal alojada.
 
 El navegador se comprueba además con una importación de ejemplo y un ciclo completo de evaluación. La producción arranca sin datos de demostración importados.

@@ -4,7 +4,7 @@ import {DatabaseSync} from 'node:sqlite';
 import {readFileSync} from 'node:fs';
 import {AcademyCloud,scheduler,cardFromJSON} from '../lib/academy-service.ts';
 import {parseBundle,requireIdentity,assertSameOrigin,scoreToRating,hash,knowledgeIdentity} from '../lib/academy-contract.ts';
-import {handleMcp,TOOLS} from '../lib/academy-mcp.ts';
+import {handleMcp,TOOLS,INSTRUCTIONS} from '../lib/academy-mcp.ts';
 import example from '../lib/example-session.json' with {type:'json'};
 
 class TestD1{
@@ -37,3 +37,20 @@ test('private data requires authenticated identity; writes require same origin',
 test('MCP discovery lists tools; unauthenticated tool calls never reach data',async()=>{let reached=false;const call=(method:string,params:any={})=>handleMcp(new Request('https://academy.test/mcp',{method:'POST',body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})}),()=>{reached=true;throw Error('should not run');});const discovery:any=await (await call('server/discover')).json();assert.deepEqual(discovery.result.supportedVersions,['2026-07-28']);const tools:any=await (await call('tools/list')).json();assert.equal(tools.result.tools.length,12);const denied:any=await (await call('tools/call',{name:'academy_status'})).json();assert.equal(denied.result.isError,true);assert.equal(reached,false);assert.ok(TOOLS.find(t=>t.name==='record_review')!.description.includes('confirmado'));});
 test('cloud backups restore into an empty library including attempts, reviews and cards',async()=>{const s=await populated(),t=(await s.listTasks())[0];await s.submitAnswer({task_id:t.id,answer:'Mi respuesta',assisted:false,attempt_id:'backup-test',expected_version:0});await s.recordReview({attempt_id:'backup-test',score:3,confirmed:true});const snapshot:any=await s.export();const target=new AcademyCloud(new TestD1() as any);await target.restore(snapshot);assert.deepEqual((await target.export() as any).tables,snapshot.tables);await assert.rejects(()=>target.restore(snapshot),/cambiaron/);});
 test('broken backups never partially restore',async()=>{const s=await populated(),snapshot:any=await s.export();snapshot.tables.evidence[0].knowledge_id='missing';const target=new AcademyCloud(new TestD1() as any);await assert.rejects(()=>target.restore(snapshot));assert.equal((await target.library()).length,0);});
+test('MCP discovery and initialization deliver proactive capture instructions without accessing library data',async()=>{
+ for(const method of ['server/discover','initialize']){
+  let dataAccessed=false;
+  const response=await handleMcp(new Request('https://academy.test/mcp',{method:'POST',body:JSON.stringify({jsonrpc:'2.0',id:7,method,params:{protocolVersion:'2026-07-28'}})}),()=>{dataAccessed=true;throw new Error('Metadata must not access personal records');});
+  const message:any=await response.json();assert.equal(message.result.instructions,INSTRUCTIONS);assert.equal(message.result.serverInfo.version,'0.2.1');
+  assert.match(message.result.instructions.slice(0,512),/sin esperar «guárdalo»/);
+  for(const expected of ['conocimientos sustanciales','evitar duplicados','recuperación, razonamiento o aplicación','no afirmes que está registrado','pendientes de consolidar','dudas triviales','procedimientos administrativos','confirmación expresa de la puntuación'])assert.ok(message.result.instructions.includes(expected),expected);
+  assert.equal(dataAccessed,false);
+ }
+});
+test('advertised capture tools preserve permissions and explicit review confirmation',async()=>{
+ const response=await handleMcp(new Request('https://academy.test/mcp',{method:'POST',body:JSON.stringify({jsonrpc:'2.0',id:1,method:'tools/list'})}),()=>{throw Error('Not needed for metadata');});
+ const message:any=await response.json();const tools=message.result.tools;
+ const preview=tools.find((t:any)=>t.name==='preview_import'),save=tools.find((t:any)=>t.name==='import_session'),review=tools.find((t:any)=>t.name==='record_review');
+ assert.match(preview.description,/captura proactiva/);assert.match(save.description,/captura proactiva/);assert.match(save.description,/confirmaciones exigidas/);
+ assert.equal(preview.annotations.readOnlyHint,true);assert.equal(save.annotations.readOnlyHint,false);assert.equal(review.inputSchema.properties.confirmed.const,true);
+});

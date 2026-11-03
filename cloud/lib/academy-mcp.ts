@@ -18,8 +18,8 @@ export async function handleMcp(request:Request,getService:()=>AcademyCloud){
  let msg:any;
  try{const raw=await request.text();if(new TextEncoder().encode(raw).length>10485760)throw new AcademyError('Petición demasiado grande.');msg=JSON.parse(raw);}catch{return Response.json({jsonrpc:'2.0',id:null,error:{code:-32700,message:'JSON no válido.'}},{status:400});}
  const id=msg.id??null,reply=(result:any)=>Response.json({jsonrpc:'2.0',id,result},{headers:{'Cache-Control':'no-store'}});
- if(msg.method==='server/discover')return reply({supportedVersions:['2026-07-28'],capabilities:{tools:{}},serverInfo:{name:'mi-academia',version:'0.2.0'},instructions:INSTRUCTIONS});
- if(msg.method==='initialize')return reply({protocolVersion:['2026-07-28','2025-06-18','2025-03-26','2024-11-05'].includes(msg.params?.protocolVersion)?msg.params.protocolVersion:'2025-03-26',capabilities:{tools:{}},serverInfo:{name:'mi-academia',version:'0.2.0'},instructions:INSTRUCTIONS});
+ if(msg.method==='server/discover')return reply({supportedVersions:['2026-07-28'],capabilities:{tools:{}},serverInfo:{name:'mi-academia',version:'0.2.1'},instructions:INSTRUCTIONS});
+ if(msg.method==='initialize')return reply({protocolVersion:['2026-07-28','2025-06-18','2025-03-26','2024-11-05'].includes(msg.params?.protocolVersion)?msg.params.protocolVersion:'2025-03-26',capabilities:{tools:{}},serverInfo:{name:'mi-academia',version:'0.2.1'},instructions:INSTRUCTIONS});
  if(msg.method==='notifications/initialized'||msg.method==='notifications/cancelled')return new Response(null,{status:202});
  if(msg.method==='ping')return reply({});
  if(msg.method==='tools/list')return reply({tools:TOOLS});
