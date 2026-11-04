@@ -27,6 +27,40 @@
       "title": "Evidence",
       "type": "object"
     },
+    "GlossaryEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "term": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Term",
+          "type": "string"
+        },
+        "definition": {
+          "maxLength": 50000,
+          "minLength": 1,
+          "title": "Definition",
+          "type": "string"
+        },
+        "source_ids": {
+          "items": {
+            "pattern": "^[\\w.:-]{1,150}$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Source Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "term",
+        "definition",
+        "source_ids"
+      ],
+      "title": "GlossaryEntry",
+      "type": "object"
+    },
     "Knowledge": {
       "additionalProperties": false,
       "properties": {
@@ -133,6 +167,62 @@
       "title": "Knowledge",
       "type": "object"
     },
+    "NoteSection": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "body": {
+          "maxLength": 50000,
+          "minLength": 1,
+          "title": "Body",
+          "type": "string"
+        },
+        "kind": {
+          "default": "explicacion",
+          "enum": [
+            "explicacion",
+            "ejemplo",
+            "procedimiento",
+            "comparacion",
+            "contexto",
+            "sintesis"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "source_ids": {
+          "items": {
+            "pattern": "^[\\w.:-]{1,150}$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Source Ids",
+          "type": "array"
+        },
+        "knowledge_ids": {
+          "items": {
+            "pattern": "^[\\w.:-]{1,150}$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Knowledge Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "title",
+        "body",
+        "source_ids"
+      ],
+      "title": "NoteSection",
+      "type": "object"
+    },
     "Relation": {
       "additionalProperties": false,
       "properties": {
@@ -223,6 +313,16 @@
           "maxItems": 1000,
           "title": "Relations",
           "type": "array"
+        },
+        "study_notes": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StudyNotes"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -289,6 +389,53 @@
         "kind"
       ],
       "title": "Source",
+      "type": "object"
+    },
+    "StudyNotes": {
+      "additionalProperties": false,
+      "properties": {
+        "objectives": {
+          "items": {
+            "maxLength": 300,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 30,
+          "title": "Objectives",
+          "type": "array"
+        },
+        "sections": {
+          "items": {
+            "$ref": "#/$defs/NoteSection"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "title": "Sections",
+          "type": "array"
+        },
+        "glossary": {
+          "items": {
+            "$ref": "#/$defs/GlossaryEntry"
+          },
+          "maxItems": 100,
+          "title": "Glossary",
+          "type": "array"
+        },
+        "open_questions": {
+          "items": {
+            "maxLength": 300,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 30,
+          "title": "Open Questions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "sections"
+      ],
+      "title": "StudyNotes",
       "type": "object"
     },
     "Task": {

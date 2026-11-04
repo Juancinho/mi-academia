@@ -340,6 +340,25 @@ def sessions_page():
         with st.expander(f"{session['title']} · {local_date(session['occurred_at'])} · {session['knowledge_count']} conocimientos"):
             st.caption(f"Identificador: {session['external_id']} · Importada: {local_date(session['imported_at'])}")
             st.write(session["summary"])
+            material = json.loads(session["payload_json"])
+            notes = material.get("study_notes")
+            if notes:
+                st.subheader("Apuntes de estudio")
+                for objective in notes.get("objectives", []):
+                    st.write(f"• {objective}")
+                sources = {source["id"]: source for source in material["sources"]}
+                for section in notes["sections"]:
+                    st.markdown(f"### {section['title']}")
+                    st.markdown(section["body"])
+                    st.caption("Fuentes: " + ", ".join(sources[key]["title"] for key in section["source_ids"]))
+                if notes.get("glossary"):
+                    st.markdown("### Glosario")
+                    for entry in notes["glossary"]:
+                        st.write(f"{entry['term']}: {entry['definition']}")
+                if notes.get("open_questions"):
+                    st.markdown("### Dudas abiertas")
+                    for question in notes["open_questions"]:
+                        st.write(f"• {question}")
             if session["original_text"]:
                 st.text(session["original_text"])
             st.download_button("Descargar sesión original JSON", json.dumps({"schema_version": 1,

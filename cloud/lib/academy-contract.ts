@@ -1,4 +1,4 @@
-import {validate_import as validate} from './generated-validators.mjs';
+import {validate_import as validate,validate_save_notebook} from './generated-validators.mjs';
 export {MODES,EPI,STAGES} from './academy-labels.ts';
 export const CONFIG={version:'FSRS-6' as const,desiredRetention:0.9,enableShortTerm:true,learningSteps:['1m','10m'],relearningSteps:['10m'],enableFuzz:false,maximumInterval:36500};
 export type Bundle={schema_version:1;sessions:any[]};
@@ -26,8 +26,25 @@ export function parseBundle(value:unknown):Bundle{
    for(const e of k.evidence)if(!sources.has(e.source_id)||(!e.locator.trim()&&!e.excerpt.trim()))throw new AcademyError('Evidencia sin fuente, fragmento ni localizador válidos.');
   }
   for(const r of s.relations)if(!ids.has(r.from_id)||!ids.has(r.to_id)||r.from_id===r.to_id)throw new AcademyError('Relación con referencias inválidas.');
+  if(s.study_notes)s.study_notes=parseNotes(s.study_notes,s);
  }
  return clean;
+}
+export function parseNotes(value:unknown,session:any){
+ const notes=JSON.parse(JSON.stringify(value));
+ if(!validate_save_notebook({session_id:'validation',expected_version:0,notes}))throw new AcademyError('Apuntes no válidos: '+JSON.stringify(validate_save_notebook.errors).slice(0,1200));
+ const sources=new Set(session.sources.map((s:any)=>s.id)),knowledge=new Set(session.knowledge.map((k:any)=>k.id));
+ for(const section of notes.sections){
+  section.title=text(section.title,'Título de apartado',300);section.body=text(section.body,'Contenido del apartado');
+  if(section.source_ids.some((id:string)=>!sources.has(id))||section.knowledge_ids.some((id:string)=>!knowledge.has(id)))throw new AcademyError('Los apuntes referencian fuentes o conocimientos ajenos a esta sesión.');
+ }
+ for(const entry of notes.glossary){
+  entry.term=text(entry.term,'Término',300);entry.definition=text(entry.definition,'Definición');
+  if(entry.source_ids.some((id:string)=>!sources.has(id)))throw new AcademyError('El glosario referencia una fuente ajena a esta sesión.');
+ }
+ notes.objectives=notes.objectives.map((s:string)=>text(s,'Objetivo',300));notes.open_questions=notes.open_questions.map((s:string)=>text(s,'Duda',300));
+ if(new TextEncoder().encode(JSON.stringify(notes)).length>500000)throw new AcademyError('Máximo 500 KB de apuntes por cuaderno.');
+ return notes;
 }
 export function canonical(v:any):string{if(Array.isArray(v))return '['+v.map(canonical).join(',')+']';if(v!==null&&typeof v==='object')return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canonical(v[k])).join(',')+'}';return JSON.stringify(v);}
 export async function hash(v:any){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonical(v))))].map(b=>b.toString(16).padStart(2,'0')).join('');}

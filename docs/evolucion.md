@@ -1,6 +1,6 @@
 # Plan de evolución
 
-Las siguientes capacidades no están activas. Cada etapa conserva la importación manual y el funcionamiento local.
+La web alojada ya incluye conexión MCP con ChatGPT, captura proactiva, cuadernos estructurados y tandas de estudio. La versión local admite importar y mostrar los apuntes. Las siguientes etapas describen ampliaciones pendientes; conservan la importación manual y el funcionamiento local.
 
 ## 1. Uso real y calidad de la biblioteca
 
@@ -14,7 +14,7 @@ Las siguientes capacidades no están activas. Cada etapa conserva la importació
 
 ## 2. Integración explícita con ChatGPT
 
-El flujo disponible hoy es conversación → JSON revisado → importación. La aplicación no puede asumir acceso al historial privado de ChatGPT.
+El flujo local es conversación → JSON revisado → importación. En la web ya funciona la conexión MCP privada para consultar e importar sesiones y editar cuadernos. La aplicación no puede asumir acceso al historial privado de ChatGPT.
 
 - Crear un adaptador para archivos de conversaciones que el usuario haya exportado y seleccionado expresamente. Mantener identificadores de conversación y turno, conservar el texto y no enviar automáticamente el archivo completo a ningún proveedor.
 - Añadir una API local o servidor MCP con herramientas pequeñas: previsualizar importación, importar una sesión y consultar conocimientos. Aplicar el mismo validador, deduplicación y transacciones del servicio actual.

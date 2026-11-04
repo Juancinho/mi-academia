@@ -1,12 +1,13 @@
 import {DefaultScheduler} from 'ts-fsrs';
-import {AcademyError,CONFIG,STAGES,hash,knowledgeIdentity,normalized,parseBundle,scoreToRating,text} from './academy-contract.ts';
+import {AcademyError,CONFIG,STAGES,hash,knowledgeIdentity,normalized,parseBundle,parseNotes,scoreToRating,text} from './academy-contract.ts';
+import {notesFromSession} from './academy-notes.ts';
 
 const schedulerPromise=DefaultScheduler(CONFIG as any);
 export async function scheduler(){return schedulerPromise;}
 export function cardFromJSON(raw:string){return JSON.parse(raw,(key,value)=>typeof value==='string'&&['dueAt','lastReviewAt','createdAt'].includes(key)?new Date(value):value);}
 const js=JSON.stringify;
 const at=()=>new Date().toISOString();
-const TABLES=['library_state','sessions','knowledge','evidence','knowledge_tags','tasks','task_sessions','relations','exposures','attempts','reviews'];
+const TABLES=['library_state','sessions','knowledge','evidence','knowledge_tags','tasks','task_sessions','relations','exposures','attempts','reviews','notebooks'];
 
 export class AcademyCloud{
  db:D1Database;constructor(db:D1Database){this.db=db;}
@@ -109,6 +110,30 @@ export class AcademyCloud{
   await this.q('INSERT OR IGNORE INTO relations(id,from_id,to_id,label,explanation,session_id) VALUES(?,?,?,?,?,NULL)',await hash([input.from_id,input.to_id,label,explanation]),input.from_id,input.to_id,label,explanation).run();return {saved:true};
  }
  async sessions(){return (await this.rows('SELECT * FROM sessions ORDER BY imported_at DESC')).map(s=>({...JSON.parse(s.payload),id:s.id,imported_at:s.imported_at}));}
+ async notebooks(query=''){
+  const [sessions,edits]=await Promise.all([this.sessions(),this.rows('SELECT * FROM notebooks')]);
+  return sessions.map(s=>{
+   const edited=edits.find(n=>n.session_id===s.id),notes=edited?JSON.parse(edited.data):notesFromSession(s);
+   return {id:s.id,title:s.title,summary:s.summary,occurred_at:s.occurred_at,topics:[...new Set(s.knowledge.flatMap((k:any)=>k.topics))],section_count:notes.sections.length,knowledge_count:s.knowledge.length,task_count:s.knowledge.reduce((n:number,k:any)=>n+k.tasks.length,0),source_count:s.sources.length,edited:!!edited,updated_at:edited?.updated_at||s.imported_at,_search:normalized([s.title,s.summary,...s.sources.map((r:any)=>r.title),JSON.stringify(notes),...s.knowledge.flatMap((k:any)=>k.topics)].join(' '))};
+  }).filter(s=>!query||s._search.includes(normalized(query))).map(({_search,...s})=>s);
+ }
+ async notebook(id:string){
+  const row=await this.row('SELECT * FROM sessions WHERE id=?',id);if(!row)throw new AcademyError('Cuaderno no encontrado.',404);
+  const session=JSON.parse(row.payload),edited=await this.row('SELECT * FROM notebooks WHERE session_id=?',id);
+  const [links,allTasks]=await Promise.all([this.rows('SELECT task_id FROM task_sessions WHERE session_id=?',id),this.listTasks(false)]),taskIds=new Set(links.map(t=>t.task_id));
+  const concepts=await Promise.all(session.knowledge.map(async(k:any)=>({...k,id:await hash(knowledgeIdentity(k))})));
+  const {study_notes,knowledge:originalKnowledge,...original}=session;
+  return {id,...original,knowledge:originalKnowledge.map(({tasks,...k}:any)=>k),notes:edited?JSON.parse(edited.data):notesFromSession(session),version:edited?.version||0,origin:edited?'edited':study_notes?'imported':'assembled',updated_at:edited?.updated_at||row.imported_at,concepts:concepts.map(({tasks,...k}:any)=>k),tasks:allTasks.filter(t=>taskIds.has(t.id))};
+ }
+ async saveNotebook(input:any){
+  const id=text(input.session_id,'Cuaderno',100),row=await this.row('SELECT payload FROM sessions WHERE id=?',id);if(!row)throw new AcademyError('Cuaderno no encontrado.',404);
+  if(!Number.isInteger(input.expected_version)||input.expected_version<0)throw new AcademyError('Versión del cuaderno inválida.');
+  const notes=parseNotes(input.notes,JSON.parse(row.payload)),existing=await this.row('SELECT * FROM notebooks WHERE session_id=?',id);
+  if(existing&&await hash(JSON.parse(existing.data))===await hash(notes))return {saved:true,version:existing.version,updated_at:existing.updated_at};
+  const version=(existing?.version||0)+1,now=at();
+  await this.guard('COALESCE((SELECT version FROM notebooks WHERE session_id=?),0)=?',[id,input.expected_version],[this.q('INSERT INTO notebooks(session_id,data,version,updated_at) VALUES(?,?,?,?) ON CONFLICT(session_id) DO UPDATE SET data=excluded.data,version=excluded.version,updated_at=excluded.updated_at',id,js(notes),version,now)]);
+  return {saved:true,version,updated_at:now};
+ }
  async relations(){return (await this.rows('SELECT r.*,a.data AS from_data,b.data AS to_data FROM relations r JOIN knowledge a ON a.id=r.from_id JOIN knowledge b ON b.id=r.to_id')).map(r=>({...r,from_title:JSON.parse(r.from_data).title,to_title:JSON.parse(r.to_data).title,from_data:undefined,to_data:undefined}));}
  async dashboard(){
   const [items,tasks,sessions,reviews,relations]=await Promise.all([this.library(),this.listTasks(false),this.sessions(),this.rows('SELECT data FROM reviews ORDER BY created_at'),this.relations()]);const now=at(),all=reviews.map(r=>JSON.parse(r.data)),today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Madrid'}),calendar=[];
@@ -122,15 +147,24 @@ export class AcademyCloud{
  async restore(backup:any){
   if(backup?.format!=='mi-academia-cloud-backup'||backup.schema_version!==1||!backup.tables)throw new AcademyError('No es un respaldo compatible de Mi Academia en la nube.');
   const columns:Record<string,string[]>={knowledge:['id','data','created_at'],sessions:['id','external_id','hash','payload','imported_at'],knowledge_tags:['knowledge_id','normalized','label'],evidence:['id','knowledge_id','session_id','data'],tasks:['id','knowledge_id','data','card','due','version'],task_sessions:['task_id','session_id'],relations:['id','from_id','to_id','label','explanation','session_id'],exposures:['id','knowledge_id','level','note','created_at'],attempts:['id','task_id','answer','assisted','version','created_at'],reviews:['id','task_id','version','data','created_at'],library_state:['id','revision']};
-  if(Object.keys(backup.tables).sort().join('|')!==Object.keys(columns).sort().join('|'))throw new AcademyError('El respaldo no contiene las tablas esperadas.');
+  columns.notebooks=['session_id','data','version','updated_at'];
+  const tables={...backup.tables};
+  // Older snapshots predate notebooks; restore them without changing their session hashes.
+  if(!('notebooks' in tables))tables.notebooks=[];
+  if(Object.keys(tables).sort().join('|')!==Object.keys(columns).sort().join('|'))throw new AcademyError('El respaldo no contiene las tablas esperadas.');
   const statements:D1PreparedStatement[]=[];const sch=await scheduler();
   for(const [table,keys] of Object.entries(columns)){
-   const rows=backup.tables[table];if(!Array.isArray(rows))throw new AcademyError('Tabla de respaldo inválida.');
+   const rows=tables[table];if(!Array.isArray(rows))throw new AcademyError('Tabla de respaldo inválida.');
    for(const row of rows){
     if(!row||Object.keys(row).sort().join('|')!==[...keys].sort().join('|')||Object.values(row).some(v=>v!==null&&typeof v!=='string'&&typeof v!=='number'))throw new AcademyError('Fila de respaldo inválida.');
     if(table==='sessions')parseBundle({schema_version:1,sessions:[JSON.parse(row.payload)]});
     if(table==='tasks'){const card=cardFromJSON(row.card);const checked=await (sch as any).schema.card['~standard'].validate(card);if(checked.issues||new Date(row.due).toISOString()!==card.dueAt.toISOString())throw new AcademyError('Estado FSRS inválido en el respaldo.');}
     if(table==='reviews'){const r=JSON.parse(row.data);scoreToRating(r.score,r.assisted);if(r.id!==row.id||r.task_id!==row.task_id)throw new AcademyError('Historial inconsistente.');}
+    if(table==='notebooks'){
+     const session=tables.sessions.find((s:any)=>s.id===row.session_id);
+     if(!session||!Number.isInteger(row.version)||row.version<1||!Number.isFinite(Date.parse(row.updated_at)))throw new AcademyError('Cuaderno inconsistente en el respaldo.');
+     parseNotes(JSON.parse(row.data),JSON.parse(session.payload));
+    }
     statements.push(this.q(`INSERT INTO ${table}(${keys.join(',')}) VALUES(${keys.map(()=>'?').join(',')})`,...keys.map(k=>row[k])));
    }
   }

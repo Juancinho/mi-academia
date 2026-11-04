@@ -92,6 +92,27 @@ class Relation(StrictModel):
         return self
 
 
+class NoteSection(StrictModel):
+    title: Short
+    body: Text
+    kind: Literal["explicacion", "ejemplo", "procedimiento", "comparacion", "contexto", "sintesis"] = "explicacion"
+    source_ids: list[Key] = Field(min_length=1, max_length=100)
+    knowledge_ids: list[Key] = Field(default_factory=list, max_length=100)
+
+
+class GlossaryEntry(StrictModel):
+    term: Short
+    definition: Text
+    source_ids: list[Key] = Field(min_length=1, max_length=100)
+
+
+class StudyNotes(StrictModel):
+    objectives: list[Short] = Field(default_factory=list, max_length=30)
+    sections: list[NoteSection] = Field(min_length=1, max_length=500)
+    glossary: list[GlossaryEntry] = Field(default_factory=list, max_length=100)
+    open_questions: list[Short] = Field(default_factory=list, max_length=30)
+
+
 class Session(StrictModel):
     external_id: Key
     title: Short
@@ -101,6 +122,7 @@ class Session(StrictModel):
     sources: list[Source] = Field(min_length=1, max_length=100)
     knowledge: list[Knowledge] = Field(min_length=1, max_length=500)
     relations: list[Relation] = Field(default_factory=list, max_length=1000)
+    study_notes: StudyNotes | None = Field(default=None, exclude_if=lambda value: value is None)
 
     @model_validator(mode="after")
     def references(self):
@@ -114,6 +136,15 @@ class Session(StrictModel):
         for relation in self.relations:
             if relation.from_id not in knowledge_ids or relation.to_id not in knowledge_ids:
                 raise ValueError("La relación referencia un conocimiento ausente de la sesión.")
+        if self.study_notes:
+            for section in self.study_notes.sections:
+                if any(key not in source_ids for key in section.source_ids):
+                    raise ValueError("Los apuntes referencian una fuente ausente de la sesión.")
+                if any(key not in knowledge_ids for key in section.knowledge_ids):
+                    raise ValueError("Los apuntes referencian un conocimiento ausente de la sesión.")
+            for entry in self.study_notes.glossary:
+                if any(key not in source_ids for key in entry.source_ids):
+                    raise ValueError("El glosario referencia una fuente ausente de la sesión.")
         return self
 
 

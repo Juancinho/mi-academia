@@ -1,0 +1,265 @@
+{
+  "schema_version": 1,
+  "sessions": [
+    {
+      "external_id": "demo-cuaderno-estudio-v2",
+      "title": "Cuaderno de ejemplo · pensar, contrastar y practicar",
+      "occurred_at": "2026-11-02T10:00:00+01:00",
+      "summary": "Sesión ilustrativa escrita para probar Mi Academia. Conecta lógica, análisis de fuentes y práctica de programación. No es una conversación real recuperada de ChatGPT.",
+      "original_text": "[Texto de demostración]\n1. En lógica clásica, de P y de P implica Q se puede inferir Q: es el modus ponens. La validez de la inferencia no demuestra por sí sola que las premisas sean verdaderas.\n2. Un testimonio histórico debe analizarse considerando autoría, contexto, propósito y contraste con otras fuentes. Una interpretación debe explicar qué evidencia la respalda y qué alternativas admite.\n3. En Python, una función puede eliminar duplicados preservando el orden mediante una lista de salida y un conjunto de elementos ya vistos, si los elementos son hashables.\n4. Releer y recuperar sin mirar son actividades distintas. Una respuesta correcta con ayuda no demuestra recuperación autónoma.",
+      "sources": [
+        {
+          "id": "texto-demo",
+          "title": "Texto didáctico de demostración",
+          "kind": "personal",
+          "citation": "Texto incluido íntegramente en esta sesión. No representa una verificación externa."
+        }
+      ],
+      "knowledge": [
+        {
+          "id": "modus-ponens",
+          "title": "Modus ponens y verdad de las premisas",
+          "content": "En lógica clásica, P y P implica Q permiten inferir Q. La validez se refiere a la forma del argumento; para afirmar que Q es verdadera también hay que justificar las premisas.",
+          "kind": "concepto",
+          "epistemic": "verificable",
+          "topics": [
+            "Lógica",
+            "Filosofía",
+            "Pensamiento crítico"
+          ],
+          "evidence": [
+            {
+              "source_id": "texto-demo",
+              "locator": "Apartado 1",
+              "excerpt": "En lógica clásica, de P y de P implica Q se puede inferir Q: es el modus ponens. La validez de la inferencia no demuestra por sí sola que las premisas sean verdaderas."
+            }
+          ],
+          "tasks": [
+            {
+              "mode": "recuperacion",
+              "prompt": "Escribe la forma del modus ponens sin consultar fuentes.",
+              "expected_answer": "P; P implica Q; por tanto Q.",
+              "rubric": [
+                "Incluye ambas premisas",
+                "La conclusión es Q",
+                "No confunde la regla con afirmar el consecuente"
+              ]
+            },
+            {
+              "mode": "razonamiento",
+              "prompt": "Si llueve, la calle se moja. La calle está mojada. ¿Puedes concluir que llueve? Justifica.",
+              "expected_answer": "No. Es afirmar el consecuente: la calle podría mojarse por otras causas. La implicación no garantiza la dirección inversa.",
+              "rubric": [
+                "Rechaza la conclusión necesaria",
+                "Distingue implicación de equivalencia",
+                "Ofrece una causa alternativa coherente"
+              ]
+            },
+            {
+              "mode": "demostracion",
+              "prompt": "Demuestra Q a partir de P y P implica Q, e indica el supuesto sobre las premisas necesario para afirmar Q como verdadera.",
+              "expected_answer": "Por eliminación de la implicación (modus ponens), de P y P implica Q se obtiene Q. La inferencia preserva verdad si las premisas son verdaderas; la regla no prueba su verdad.",
+              "rubric": [
+                "Explicita premisas y conclusión",
+                "Nombra o describe la regla de inferencia",
+                "Distingue validez de verdad de las premisas"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "fuentes",
+          "title": "Análisis crítico de testimonios históricos",
+          "content": "Una lectura crítica de un testimonio considera autoría, contexto, propósito y contraste con otras fuentes. Una interpretación debe vincular sus afirmaciones con evidencia y reconocer alternativas.",
+          "kind": "competencia",
+          "epistemic": "interpretacion",
+          "topics": [
+            "Historia",
+            "Pensamiento crítico",
+            "Lectura"
+          ],
+          "evidence": [
+            {
+              "source_id": "texto-demo",
+              "locator": "Apartado 2",
+              "excerpt": "Un testimonio histórico debe analizarse considerando autoría, contexto, propósito y contraste con otras fuentes."
+            }
+          ],
+          "tasks": [
+            {
+              "mode": "analisis",
+              "prompt": "Un gobernante escribe en sus memorias que toda la población apoyó su política. Analiza qué puedes concluir y qué fuentes adicionales buscarías.",
+              "expected_answer": "Es un testimonio situado e interesado, no evidencia suficiente de apoyo universal. Conviene estudiar contexto y destinatario y contrastar con testimonios de distintos grupos, registros y otras fuentes independientes.",
+              "rubric": [
+                "Separa testimonio de hecho establecido",
+                "Considera autoría e intención",
+                "Propone contraste concreto",
+                "Reconoce límites e interpretaciones alternativas"
+              ]
+            },
+            {
+              "mode": "comparacion",
+              "prompt": "Compara comprobar la validez de un argumento con comprobar la fiabilidad de una fuente histórica.",
+              "expected_answer": "La validez examina si la conclusión se sigue de las premisas. La fiabilidad evalúa qué apoyo merecen las afirmaciones de una fuente en su contexto. Un argumento válido puede usar premisas falsas; ambos análisis se complementan.",
+              "rubric": [
+                "Distingue forma lógica y apoyo empírico",
+                "Explica que validez no garantiza premisas verdaderas",
+                "Conecta ambos análisis sin equipararlos"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "deduplicacion",
+          "title": "Eliminar duplicados conservando el orden en Python",
+          "content": "Para elementos hashables, se puede recorrer una secuencia guardando un conjunto de elementos vistos y añadiendo a una lista solo los que aparecen por primera vez. El orden de las primeras apariciones se conserva.",
+          "kind": "procedimiento",
+          "epistemic": "verificable",
+          "topics": [
+            "Informática",
+            "Python",
+            "Datos"
+          ],
+          "evidence": [
+            {
+              "source_id": "texto-demo",
+              "locator": "Apartado 3",
+              "excerpt": "En Python, una función puede eliminar duplicados preservando el orden mediante una lista de salida y un conjunto de elementos ya vistos, si los elementos son hashables."
+            }
+          ],
+          "tasks": [
+            {
+              "mode": "practica",
+              "prompt": "Escribe una función de Python que convierta [3, 1, 3, 2, 1] en [3, 1, 2]. Conserva el orden y explica qué entradas admite.",
+              "expected_answer": "def unicos(datos):\n    vistos = set()\n    salida = []\n    for x in datos:\n        if x not in vistos:\n            vistos.add(x)\n            salida.append(x)\n    return salida\n\nAdmite elementos hashables. También es válida una solución equivalente que preserve el orden.",
+              "rubric": [
+                "Produce [3, 1, 2] para el ejemplo",
+                "Conserva el orden de la primera aparición",
+                "Considera entrada vacía y elementos repetidos",
+                "Explica el requisito de hashabilidad o justifica una alternativa"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "recuperacion-autonoma",
+          "title": "Leer no equivale a demostrar recuperación",
+          "content": "Releer una explicación y producir una respuesta sin mirarla son actividades distintas. Una respuesta con ayuda no demuestra que se pueda recuperar el conocimiento de forma autónoma.",
+          "kind": "concepto",
+          "epistemic": "verificable",
+          "topics": [
+            "Aprendizaje",
+            "Metacognición"
+          ],
+          "evidence": [
+            {
+              "source_id": "texto-demo",
+              "locator": "Apartado 4",
+              "excerpt": "Releer y recuperar sin mirar son actividades distintas. Una respuesta correcta con ayuda no demuestra recuperación autónoma."
+            }
+          ],
+          "tasks": [
+            {
+              "mode": "explicacion",
+              "prompt": "Explica con un ejemplo por qué entender una solución al leerla no basta para demostrar que sabes resolver el problema.",
+              "expected_answer": "Al leer una solución puedo reconocer sus pasos sin poder generarlos. Resolver otro problema sin consultar la referencia aporta evidencia de aplicación autónoma. Repetirlo más adelante permite observar retención.",
+              "rubric": [
+                "Distingue reconocimiento de producción autónoma",
+                "Aporta un ejemplo concreto",
+                "Propone una evaluación sin ayuda",
+                "No presenta un acierto aislado como dominio permanente"
+              ]
+            }
+          ]
+        }
+      ],
+      "relations": [
+        {
+          "from_id": "modus-ponens",
+          "to_id": "fuentes",
+          "label": "complementa",
+          "explanation": "La validez lógica y el análisis de evidencia ayudan a evaluar argumentos desde perspectivas distintas."
+        },
+        {
+          "from_id": "deduplicacion",
+          "to_id": "recuperacion-autonoma",
+          "label": "permite practicar",
+          "explanation": "Escribir la función sin mirar la solución aporta evidencia de aplicación autónoma."
+        }
+      ],
+      "study_notes": {
+        "objectives": [
+          "Distinguir validez lógica y verdad de las premisas.",
+          "Analizar un testimonio sin confundirlo con un hecho demostrado.",
+          "Explicar un procedimiento y contrastar el aprendizaje mediante práctica."
+        ],
+        "sections": [
+          {
+            "title": "Modus ponens y verdad de las premisas",
+            "body": "En lógica clásica, P y P implica Q permiten inferir Q. La validez se refiere a la forma del argumento; para afirmar que Q es verdadera también hay que justificar las premisas.",
+            "kind": "explicacion",
+            "source_ids": [
+              "texto-demo"
+            ],
+            "knowledge_ids": [
+              "modus-ponens"
+            ]
+          },
+          {
+            "title": "Análisis crítico de testimonios históricos",
+            "body": "Una lectura crítica de un testimonio considera autoría, contexto, propósito y contraste con otras fuentes. Una interpretación debe vincular sus afirmaciones con evidencia y reconocer alternativas.",
+            "kind": "explicacion",
+            "source_ids": [
+              "texto-demo"
+            ],
+            "knowledge_ids": [
+              "fuentes"
+            ]
+          },
+          {
+            "title": "Eliminar duplicados conservando el orden en Python",
+            "body": "Para elementos hashables, se puede recorrer una secuencia guardando un conjunto de elementos vistos y añadiendo a una lista solo los que aparecen por primera vez. El orden de las primeras apariciones se conserva.",
+            "kind": "procedimiento",
+            "source_ids": [
+              "texto-demo"
+            ],
+            "knowledge_ids": [
+              "deduplicacion"
+            ]
+          },
+          {
+            "title": "Leer no equivale a demostrar recuperación",
+            "body": "Releer una explicación y producir una respuesta sin mirarla son actividades distintas. Una respuesta con ayuda no demuestra que se pueda recuperar el conocimiento de forma autónoma.",
+            "kind": "explicacion",
+            "source_ids": [
+              "texto-demo"
+            ],
+            "knowledge_ids": [
+              "recuperacion-autonoma"
+            ]
+          }
+        ],
+        "glossary": [
+          {
+            "term": "Modus ponens",
+            "definition": "Regla que permite inferir Q a partir de P y de P implica Q. La validez de la forma no prueba por sí misma las premisas.",
+            "source_ids": [
+              "texto-demo"
+            ]
+          },
+          {
+            "term": "Recuperación autónoma",
+            "definition": "Intentar recordar o resolver sin consultar la referencia ni recibir ayuda.",
+            "source_ids": [
+              "texto-demo"
+            ]
+          }
+        ],
+        "open_questions": [
+          "¿Qué otras fuentes permitirían contrastar un testimonio concreto?",
+          "¿En qué situaciones una respuesta correcta podría ocultar una laguna de comprensión?"
+        ]
+      }
+    }
+  ]
+}

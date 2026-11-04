@@ -8,6 +8,13 @@
       "when": 1793650639628,
       "tag": "0000_sleepy_old_lace",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1793807730037,
+      "tag": "0001_tricky_radioactive_man",
+      "breakpoints": true
     }
   ]
 }

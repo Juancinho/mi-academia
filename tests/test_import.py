@@ -28,6 +28,26 @@ def test_reimport_is_idempotent(populated, bundle):
     assert len(populated.detail(1)["exposures"]) == 1
 
 
+def test_optional_notes_preserve_existing_payload_and_hash(bundle):
+    assert "study_notes" not in bundle.sessions[0].model_dump(mode="json")
+
+
+def test_study_notebook_round_trip_and_references(academy):
+    from pathlib import Path
+    material = parse_bundle(Path("examples/cuaderno-estudio.json").read_text(encoding="utf-8"))
+    notes = material.sessions[0].study_notes
+    assert notes and len(notes.sections) == 4
+    academy.import_bundle(material)
+    exported = parse_bundle(academy.export_sessions())
+    assert exported.sessions[0].study_notes == notes
+    assert academy.import_bundle(exported)["skipped"] == 1
+    assert all(k["stage"] == "Registrado" for k in academy.list_knowledge())
+    broken = material.model_dump(mode="json")
+    broken["sessions"][0]["study_notes"]["sections"][0]["source_ids"] = ["absent"]
+    with pytest.raises(ValidationError):
+        ImportBundle.model_validate(broken)
+
+
 def test_same_knowledge_keeps_all_sources_and_task_origins(populated, payload):
     payload["sessions"][0]["external_id"] = "second-session"
     payload["sessions"][0]["sources"][0]["title"] = "Otra fuente"
