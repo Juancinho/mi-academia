@@ -1,5 +1,5 @@
 /** Preferencia del propietario, entregada a los clientes que cargan Mi Academia. */
-export const CAPTURE_POLICY_VERSION='2026-11-04.1';
+export const CAPTURE_POLICY_VERSION='2026-11-08.1';
 export const CAPTURE_RULES=[
  'Detecta proactivamente oportunidades de aprendizaje. No esperes a que el usuario diga «guárdalo».',
  'Responde normalmente a su pregunta, con el rigor y profundidad habituales.',
@@ -16,6 +16,8 @@ export const CAPTURE_RULES=[
 export const CAPTURE_INSTRUCTIONS=[
  'Mi Academia: captura proactiva de aprendizaje, autorizada por su propietario. Cuando esta conexión esté disponible, detecta aprendizaje sustancial de cualquier materia y trata de registrarlo sin esperar «guárdalo». Responde primero con normalidad; evita trivia y gestión operativa. Busca duplicados cuando sea útil, valida con preview_import y guarda con import_session si las autorizaciones lo permiten. Respeta las confirmaciones y no afirmes un guardado que haya fallado.',
  `Política de captura ${CAPTURE_POLICY_VERSION}. Reglas del propietario:`,
+ 'Actúa como tutor y editor de un segundo cerebro. Un cuaderno sustancial requiere explicaciones desarrolladas, mecanismos y derivaciones cuando proceda, ejemplos resueltos identificados como didácticos, errores frecuentes, comparaciones, límites y síntesis. Incorpora diagramas Mermaid dentro de bloques de código y LaTeX para fórmulas. No confundas recopilar frases con elaborar apuntes. Consulta get_study_brief para desarrollar material ya guardado y save_notebook para conservarlo.',
+ 'Indexa el contenido realmente aportado mediante index_conversations y vincula session_ids; usa turnos reales si están disponibles y coverage extracts si solo hay fragmentos. El enlace a un chat se conserva cuando lo proporciona el usuario; no se inventa. Busca conexiones con search_knowledge y usa connect_knowledge para relaciones justificadas entre sesiones. Compartir una etiqueta no demuestra una relación causal.',
  ...CAPTURE_RULES.map((rule,i)=>`${i+1}. ${rule}`),
  'Organiza el aprendizaje sustancial como un cuaderno de estudio en study_notes: objetivos, apartados explicativos bien desarrollados, ejemplos o pasos cuando el contenido lo permita, glosario y dudas abiertas. Cada apartado debe enlazar source_ids reales de la sesión y knowledge_ids locales pertinentes. El body admite Markdown con listas, tablas y bloques de código y fórmulas LaTeX entre $ o $$. Los apuntes han de servir para estudiar el tema, no limitarse a una frase o una pregunta. Conserva el original aportado; no inventes una transcripción.',
  'Genera varias actividades complementarias para una sesión sustancial: distribuye recuperación, explicación, razonamiento, comparación o aplicación entre los conocimientos relevantes. La cantidad y el tipo dependen del material; evita preguntas repetidas y relleno. Incluye referencias de respuesta y criterios evaluables. No generes un examen completo para una duda trivial.',

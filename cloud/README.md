@@ -6,7 +6,7 @@ Versión alojada del proyecto Mi Academia: biblioteca persistente, importación 
 
 - Sites mantiene el sitio privado para su propietario y autentica las peticiones. Conserva esta política; esta versión contiene una biblioteca por sitio, no un sistema multiusuario con bibliotecas separadas.
 - Cada operación de datos exige la identidad validada que Sites adjunta. Las escrituras del navegador también verifican el origen. No se utiliza una clave secreta dentro del frontend.
-- El endpoint `/mcp` publica 15 herramientas con protocolo 2026-07-28 y compatibilidad de inicialización anterior. Descubrimiento y listado describen las herramientas; las llamadas que consultan o cambian datos requieren identidad.
+- El endpoint `/mcp` publica 20 herramientas con protocolo 2026-07-28 y compatibilidad de inicialización anterior. Descubrimiento y listado describen las herramientas; las llamadas que consultan o cambian datos requieren identidad.
 - Al publicar con la capacidad MCP, Sites crea una conexión privada instalable en ChatGPT. Su presencia en un chat depende de la cuenta y de los permisos disponibles. No se garantiza uso automático en todos los chats ni acceso a conversaciones no aportadas.
 - El SQLite local y D1 son bibliotecas independientes. No hay sincronización automática. Importa explícitamente las sesiones que quieras conservar en la nube; a partir de ahí usa esa biblioteca como referencia desde ChatGPT y desde la web.
 
@@ -55,6 +55,12 @@ Para vista previa usa `npm run dev`. La configuración portable simula una cuent
 
 ## Verificación
 
-32 pruebas Node con SQLite temporal cubren el contrato, los siete modos, importación atómica e idempotente, procedencia al deduplicar, estados, FSRS-6 y persistencia, respuestas fijadas, ayuda, confirmación, concurrencia, autorización, MCP y restauración. También se comprueban migración de sesiones antiguas, referencias de apuntes, ediciones concurrentes, copias antiguas y nuevas, varias evaluaciones seguidas y enlaces del lector. La base de pruebas nunca es la base personal alojada.
+44 pruebas Node con SQLite temporal cubren el contrato, los siete modos, importación atómica e idempotente, procedencia al deduplicar, estados, FSRS-6 y persistencia, respuestas fijadas, ayuda, confirmación, concurrencia, autorización, MCP y restauración. También se comprueban migración de sesiones antiguas, referencias de apuntes, ediciones concurrentes, copias antiguas y nuevas, varias evaluaciones seguidas y enlaces del lector. La base de pruebas nunca es la base personal alojada.
 
 El navegador se comprueba además con una importación de ejemplo y un ciclo completo de evaluación. La producción arranca sin datos de demostración importados.
+
+## Segundo cerebro 0.4
+
+Índice de conversaciones con FTS5 y versiones, importación de la rama activa de exportaciones ChatGPT, enlaces entre conversación y cuaderno, diagramas Mermaid sanitizados y grafo interactivo con procedencia. get_study_brief prepara el contexto para que el modelo del chat elabore apuntes de tutor y los guarde con save_notebook; el servidor no simula una generación automática inexistente.
+
+El endpoint /api/vault-sync permite descargar la biblioteca mediante acceso de servicio validado por Sites. Confía en la política owner-private: no compartir ni publicar este sitio sin retirar o volver a autorizar ese puente. El cliente Windows del repositorio principal genera subcarpetas y enlaces Obsidian y protege las ediciones locales. No se sincronizan cambios locales de vuelta a la nube.

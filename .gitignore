@@ -5,6 +5,7 @@ __pycache__/
 data/
 backups/
 exports/
+.vault-sync/
 .env
 .env.*
 !.env.example

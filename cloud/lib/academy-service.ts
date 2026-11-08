@@ -1,13 +1,14 @@
 import {DefaultScheduler} from 'ts-fsrs';
 import {AcademyError,CONFIG,STAGES,hash,knowledgeIdentity,normalized,parseBundle,parseNotes,scoreToRating,text} from './academy-contract.ts';
 import {notesFromSession} from './academy-notes.ts';
+import {indexConversations,indexExisting,searchConversations,getConversation,graphData,vaultSnapshot,noteCoverage} from './brain-service.ts';
 
 const schedulerPromise=DefaultScheduler(CONFIG as any);
 export async function scheduler(){return schedulerPromise;}
 export function cardFromJSON(raw:string){return JSON.parse(raw,(key,value)=>typeof value==='string'&&['dueAt','lastReviewAt','createdAt'].includes(key)?new Date(value):value);}
 const js=JSON.stringify;
 const at=()=>new Date().toISOString();
-const TABLES=['library_state','sessions','knowledge','evidence','knowledge_tags','tasks','task_sessions','relations','exposures','attempts','reviews','notebooks'];
+const TABLES=['library_state','sessions','knowledge','evidence','knowledge_tags','tasks','task_sessions','relations','exposures','attempts','reviews','notebooks','conversations','conversation_versions','conversation_sessions'];
 
 export class AcademyCloud{
  db:D1Database;constructor(db:D1Database){this.db=db;}
@@ -48,6 +49,7 @@ export class AcademyCloud{
   }
   if(statements.length>900)throw new AcademyError('Demasiados elementos en el lote. Divídelo en sesiones más pequeñas.');
   if(!dryRun&&statements.length){statements.push(this.q('INSERT INTO library_state(id,revision) VALUES(1,1) ON CONFLICT(id) DO UPDATE SET revision=revision+1'));await this.guard('COALESCE((SELECT revision FROM library_state WHERE id=1),0)=?',[version?.revision??0],statements);}
+  if(!dryRun)await indexExisting(this);
   return summary;
  }
  async library(query='',topic=''){
@@ -123,7 +125,8 @@ export class AcademyCloud{
   const [links,allTasks]=await Promise.all([this.rows('SELECT task_id FROM task_sessions WHERE session_id=?',id),this.listTasks(false)]),taskIds=new Set(links.map(t=>t.task_id));
   const concepts=await Promise.all(session.knowledge.map(async(k:any)=>({...k,id:await hash(knowledgeIdentity(k))})));
   const {study_notes,knowledge:originalKnowledge,...original}=session;
-  return {id,...original,knowledge:originalKnowledge.map(({tasks,...k}:any)=>k),notes:edited?JSON.parse(edited.data):notesFromSession(session),version:edited?.version||0,origin:edited?'edited':study_notes?'imported':'assembled',updated_at:edited?.updated_at||row.imported_at,concepts:concepts.map(({tasks,...k}:any)=>k),tasks:allTasks.filter(t=>taskIds.has(t.id))};
+  const notes=edited?JSON.parse(edited.data):notesFromSession(session),linksToConversation=await this.rows('SELECT conversation_id FROM conversation_sessions WHERE session_id=?',id);
+  return {id,...original,knowledge:originalKnowledge.map(({tasks,...k}:any)=>k),notes,coverage:noteCoverage(notes),conversation_ids:linksToConversation.map(c=>c.conversation_id),version:edited?.version||0,origin:edited?'edited':study_notes?'imported':'assembled',updated_at:edited?.updated_at||row.imported_at,concepts:concepts.map(({tasks,...k}:any)=>k),tasks:allTasks.filter(t=>taskIds.has(t.id))};
  }
  async saveNotebook(input:any){
   const id=text(input.session_id,'Cuaderno',100),row=await this.row('SELECT payload FROM sessions WHERE id=?',id);if(!row)throw new AcademyError('Cuaderno no encontrado.',404);
@@ -135,6 +138,13 @@ export class AcademyCloud{
   return {saved:true,version,updated_at:now};
  }
  async relations(){return (await this.rows('SELECT r.*,a.data AS from_data,b.data AS to_data FROM relations r JOIN knowledge a ON a.id=r.from_id JOIN knowledge b ON b.id=r.to_id')).map(r=>({...r,from_title:JSON.parse(r.from_data).title,to_title:JSON.parse(r.to_data).title,from_data:undefined,to_data:undefined}));}
+ async indexConversations(input:any){return indexConversations(this,input);}
+ async indexExisting(){return indexExisting(this);}
+ async conversations(query='',offset=0){return searchConversations(this,query,offset);}
+ async conversation(id:string){return getConversation(this,id);}
+ async graph(){return graphData(this);}
+ async vaultSnapshot(){return vaultSnapshot(this);}
+ async studyBrief(id:string){return {notebook:await this.notebook(id),instructions:'Desarrolla apuntes como un tutor: intuición y prerrequisitos, mecanismos y pasos, fórmulas justificadas con unidades, ejemplos resueltos identificados como didácticos, comparaciones, errores frecuentes, límites, síntesis y ejercicios variados. Usa LaTeX y diagramas Mermaid cuando ayuden. Cada apartado cita source_ids reales y knowledge_ids pertinentes. Prioriza comprensión y exactitud sin rellenar una cuota de palabras. No atribuyas tus ejemplos a una fuente. Guarda mediante save_notebook y expected_version. Leer no demuestra dominio.'};}
  async dashboard(){
   const [items,tasks,sessions,reviews,relations]=await Promise.all([this.library(),this.listTasks(false),this.sessions(),this.rows('SELECT data FROM reviews ORDER BY created_at'),this.relations()]);const now=at(),all=reviews.map(r=>JSON.parse(r.data)),today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Madrid'}),calendar=[];
   for(let n=0;n<30;n++){const date=new Date(today+'T12:00:00Z');date.setUTCDate(date.getUTCDate()+n);const key=date.toISOString().slice(0,10);calendar.push({date:key,count:tasks.filter(t=>new Date(t.due).toLocaleDateString('en-CA',{timeZone:'Europe/Madrid'})===key).length});}
@@ -148,9 +158,13 @@ export class AcademyCloud{
   if(backup?.format!=='mi-academia-cloud-backup'||backup.schema_version!==1||!backup.tables)throw new AcademyError('No es un respaldo compatible de Mi Academia en la nube.');
   const columns:Record<string,string[]>={knowledge:['id','data','created_at'],sessions:['id','external_id','hash','payload','imported_at'],knowledge_tags:['knowledge_id','normalized','label'],evidence:['id','knowledge_id','session_id','data'],tasks:['id','knowledge_id','data','card','due','version'],task_sessions:['task_id','session_id'],relations:['id','from_id','to_id','label','explanation','session_id'],exposures:['id','knowledge_id','level','note','created_at'],attempts:['id','task_id','answer','assisted','version','created_at'],reviews:['id','task_id','version','data','created_at'],library_state:['id','revision']};
   columns.notebooks=['session_id','data','version','updated_at'];
+  columns.conversations=['id','data','hash','revision','updated_at'];
+  columns.conversation_versions=['id','conversation_id','data','created_at'];
+  columns.conversation_sessions=['conversation_id','session_id'];
   const tables={...backup.tables};
   // Older snapshots predate notebooks; restore them without changing their session hashes.
   if(!('notebooks' in tables))tables.notebooks=[];
+  for(const optional of ['conversations','conversation_versions','conversation_sessions'])if(!(optional in tables))tables[optional]=[];
   if(Object.keys(tables).sort().join('|')!==Object.keys(columns).sort().join('|'))throw new AcademyError('El respaldo no contiene las tablas esperadas.');
   const statements:D1PreparedStatement[]=[];const sch=await scheduler();
   for(const [table,keys] of Object.entries(columns)){
@@ -164,6 +178,10 @@ export class AcademyCloud{
      const session=tables.sessions.find((s:any)=>s.id===row.session_id);
      if(!session||!Number.isInteger(row.version)||row.version<1||!Number.isFinite(Date.parse(row.updated_at)))throw new AcademyError('Cuaderno inconsistente en el respaldo.');
      parseNotes(JSON.parse(row.data),JSON.parse(session.payload));
+    }
+    if(table==='conversations'||table==='conversation_versions'){
+     const c=JSON.parse(row.data);const {validate_index_conversations}=await import('./generated-validators.mjs');
+     if(!validate_index_conversations({conversations:[c]})||(table==='conversations'&&(c.id!==row.id||row.hash!==await hash(JSON.parse(row.data))||!Number.isInteger(row.revision)||row.revision<1)))throw new AcademyError('Conversación inválida en el respaldo.');
     }
     statements.push(this.q(`INSERT INTO ${table}(${keys.join(',')}) VALUES(${keys.map(()=>'?').join(',')})`,...keys.map(k=>row[k])));
    }

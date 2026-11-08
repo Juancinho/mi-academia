@@ -1,0 +1,6 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "mi-academia-study",
+  "version": "0.4.0",
+  "description": "Captura educativa proactiva, apuntes de tutor y consolidación en Mi Academia. Requiere la conexión privada Mi Academia ya instalada."
+}

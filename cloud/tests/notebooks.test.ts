@@ -26,7 +26,7 @@ test('study links reject executable schemes, credential URLs and remote relative
 });
 async function setup(){const s=new AcademyCloud(new TestD1() as any);await s.import(clone());const books=await s.notebooks();return {s,id:books[0].id};}
 test('existing sessions gain notebooks after migration without rewriting original data or FSRS',async()=>{
- const db=new TestD1(false),s=new AcademyCloud(db as any);await s.import(clone());
+ const seed=new AcademyCloud(new TestD1() as any);await seed.import(clone());const snapshot:any=await seed.export();const db=new TestD1(false),s=new AcademyCloud(db as any);for(const name of ['library_state','sessions','knowledge','evidence','knowledge_tags','tasks','task_sessions','relations','exposures','attempts','reviews'])for(const row of snapshot.tables[name]){const keys=Object.keys(row);db.db.prepare('INSERT INTO '+name+'('+keys.join(',')+') VALUES('+keys.map(()=>'?').join(',')+')').run(...keys.map(k=>row[k]));}
  const original=await s.sessions(),tasks=await s.rows('SELECT * FROM tasks');
  for(const file of readdirSync(new URL('../drizzle/',import.meta.url)).filter(f=>f.endsWith('.sql')&&!f.startsWith('0000')).sort())db.db.exec(readFileSync(new URL('../drizzle/'+file,import.meta.url),'utf8'));
  const book=await s.notebook(original[0].id);assert.equal(book.origin,original[0].study_notes?'imported':'assembled');assert.ok(book.notes.sections.length);assert.equal(book.tasks.length,7);

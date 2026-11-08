@@ -1,0 +1,13 @@
+interface:
+  display_name: "Aprender con Mi Academia"
+  short_description: "Apuntes de tutor y captura educativa proactiva"
+  default_prompt: "Usa $mi-academia-aprender para explicar este tema y conservar el aprendizaje con fuentes en mi academia."
+policy:
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "mi_academia"
+      description: "Biblioteca privada Mi Academia ya conectada"
+      transport: "streamable_http"
+      url: "https://mi-academia-juancinho.juan-el-g.chatgpt.site/mcp"

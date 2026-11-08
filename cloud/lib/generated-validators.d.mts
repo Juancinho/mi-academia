@@ -1,3 +1,8 @@
+export const validate_index_conversations: { (value:any): boolean; errors?: any };
+export const validate_search_conversations: { (value:any): boolean; errors?: any };
+export const validate_get_conversation: { (value:any): boolean; errors?: any };
+export const validate_get_study_brief: { (value:any): boolean; errors?: any };
+export const validate_get_knowledge_graph: { (value:any): boolean; errors?: any };
 export const validate_academy_status: { (value:any): boolean; errors?: any };
 export const validate_search_knowledge: { (value:any): boolean; errors?: any };
 export const validate_get_knowledge: { (value:any): boolean; errors?: any };

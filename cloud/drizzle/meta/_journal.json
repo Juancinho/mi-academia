@@ -15,6 +15,13 @@
       "when": 1793807730037,
       "tag": "0001_tricky_radioactive_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794156338092,
+      "tag": "0002_round_the_hood",
+      "breakpoints": true
     }
   ]
 }

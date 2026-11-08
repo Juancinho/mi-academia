@@ -10,6 +10,8 @@ Su conexión **Mi Academia** está creada y figura instalada en esa cuenta. En u
 
 La conexión incluye las [reglas de captura proactiva](docs/captura-proactiva.md) del propietario para intentar registrar aprendizaje sustancial sin pedir «guárdalo» en cada ocasión, manteniendo fuentes, ejercicios y el estado pendiente de consolidar.
 
+La versión 0.4 añade [índice de conversaciones, grafo interactivo, diagramas y sincronización con Obsidian](docs/segundo-cerebro.md). La biblioteca privada y el resto del vault permanecen separados del código público.
+
 La web incorpora un espacio **Estudiar** con [cuadernos de apuntes](docs/cuadernos-estudio.md), referencias, glosario, editor y tandas de múltiples actividades con progreso. El contrato de importación admite apuntes estructurados generados desde conversaciones.
 
 La implementación alojada está en [cloud/](cloud/README.md), con búsqueda, registro de sesiones, evidencias, evaluaciones, FSRS y respaldos. El [detalle de la conexión](docs/github-y-chatgpt.md) explica su uso y límites.
