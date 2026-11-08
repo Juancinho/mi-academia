@@ -2,7 +2,8 @@
 import {useEffect,useState} from 'react';
 import {ArrowLeft,BookOpen,Search,Upload} from 'lucide-react';
 import {academyApi as api} from '../lib/academy-api';
-import {parseChatGPTExport,IndexedConversation} from '../lib/conversation-contract';
+import {parseChatGPTExport,IndexedConversation,conversationSchema} from '../lib/conversation-contract';
+import {validate_index_conversations} from '../lib/generated-validators.mjs';
 import StudyText from './study-text';
 export const COVERAGE:Record<string,string>={active_branch:'Rama activa de la exportación',provided:'Texto original aportado',extracts:'Solo fragmentos o resumen conservado'};
 export function ConversationReader({id,onNotebook}:{id:string;onNotebook?:(id:string)=>void}){
@@ -19,6 +20,16 @@ export function ConversationReader({id,onNotebook}:{id:string;onNotebook?:(id:st
 export default function ConversationLibrary({onNotebook,initialId=''}:{onNotebook:(id:string)=>void;initialId?:string}){
  const [query,setQuery]=useState(''),[offset,setOffset]=useState(0),[list,setList]=useState<any>({items:[],total:0}),[selected,setSelected]=useState(initialId),[tick,setTick]=useState(0),[error,setError]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
  const [incoming,setIncoming]=useState<IndexedConversation[]>([]),[checked,setChecked]=useState<Set<string>>(new Set()),[warnings,setWarnings]=useState<string[]>([]);
+ useEffect(()=>{
+  const registry=(document as Document&{modelContext?:{registerTool:(tool:any,options:{signal:AbortSignal})=>unknown}}).modelContext;
+  if(!registry?.registerTool)return;const lifecycle=new AbortController();
+  const tool={name:'index_conversations',title:'Indexar conversaciones aportadas',description:'Valida e indexa mensajes aportados, con su enlace de ChatGPT y los identificadores de los cuadernos relacionados. No recupera chats ausentes ni cambia el dominio demostrado.',inputSchema:{type:'object',additionalProperties:false,properties:{conversations:{type:'array',minItems:1,maxItems:50,items:conversationSchema}},required:['conversations']},async execute(input:unknown){
+   const clean=structuredClone(input);if(!validate_index_conversations(clean))throw new Error('Conversaciones inválidas. Revisa mensajes, cobertura e identificadores.');
+   setError('');try{const result=await api('index_conversations',clean);setTick(t=>t+1);setNotice(result.created+' conversaciones nuevas, '+result.updated+' actualizadas y '+result.skipped+' ya registradas.'+(result.complete?'':' '+result.error));return result;}catch(e:any){setError(e.message);throw e;}
+  }};
+  try{void Promise.resolve(registry.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{/* The ordinary interface remains available. */}
+  return()=>lifecycle.abort();
+ },[]);
  useEffect(()=>{let active=true;const timer=setTimeout(()=>api('action=conversations&query='+encodeURIComponent(query)+'&offset='+offset).then(v=>{if(active)setList(v);}).catch(e=>{if(active)setError(e.message);}),180);return()=>{active=false;clearTimeout(timer);};},[query,offset,tick]);
  useEffect(()=>{const url=new URL(window.location.href);url.searchParams.delete('notebook');if(selected)url.searchParams.set('conversation',selected);else url.searchParams.delete('conversation');window.history.replaceState(null,'',url);},[selected]);
  async function runImport(){setBusy(true);setError('');let saved=0;try{

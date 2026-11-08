@@ -10,6 +10,8 @@
 
 Las herramientas adicionales son `index_conversations`, `search_conversations`, `get_conversation`, `get_study_brief` y `get_knowledge_graph`. Las sesiones, los repasos y sus reglas de dominio conservan su funcionamiento anterior. Las conversaciones tienen historial de versiones y se incluyen en el respaldo; FTS es un índice derivado y se reconstruye con los triggers al restaurar.
 
+La pestaña Conversaciones también ofrece `index_conversations` mediante WebMCP cuando el navegador lo admite. Usa la misma validación y API autenticada que la interfaz, permite vincular turnos aportados con cuadernos existentes y muestra el resultado del registro. Solo está disponible con esa vista abierta: no observa otros chats en segundo plano ni añade acceso al historial.
+
 ## Elaboración real de apuntes
 
 La generación la realiza el modelo del chat, con las herramientas de Mi Academia disponibles. `get_study_brief` recupera material y criterios para desarrollar el tema; `save_notebook` guarda el resultado con control de versión. El botón «Preparar desarrollo con ChatGPT» copia una petición concreta para ese cuaderno: **copiarla no genera apuntes ni ejecuta un modelo en segundo plano**.
@@ -31,16 +33,33 @@ La sincronización es **nube → vault**. No sube el resto del vault ni modifica
 ```text
 Mi Academia/
   00 Inicio/
-  01 Cuadernos/<tema principal>/
-  02 Conceptos/<tema principal>/
-  03 Conversaciones/<año>/<mes>/
-  04 Fuentes/<tipo>/
-  05 Mapas/
+  01 Temas/
+    Economía y finanzas/
+      Cuadernos/
+      Conceptos/
+      Conversaciones/
+      Mapas/
+    Energía e ingeniería/
+      ...
+    Tecnología e informática/
+      ...
+  02 Fuentes/
 ```
 
-Los temas son etiquetas libres; las carpetas ordenan la exportación sin imponer una taxonomía a la biblioteca. Los mapas enlazan conceptos de cada tema. Los cuadernos enlazan conceptos, fuentes y conversaciones; los conceptos enlazan relaciones y cuadernos de origen. Son enlaces `[[...]]` de Obsidian, con LaTeX y Mermaid conservados en Markdown.
+Solo se crean áreas con contenido. Las carpetas representan áreas amplias, nunca cada etiqueta: los temas específicos se conservan como propiedades, enlaces y mapas dentro de su área. Las sugerencias de archivo consideran todos los temas y el título; cuando no reconocen un tema usan su cuaderno de origen o «Por organizar». Las conversaciones se agrupan con sus cuadernos y las fuentes compartidas se conservan una sola vez. Cada área tiene una nota índice. Las áreas ordenan la exportación sin imponer una taxonomía a la biblioteca ni limitar temas nuevos.
 
-Los archivos tienen identificadores estables y el manifiesto conserva sus rutas para no romper enlaces si cambia un título. Una nota editada localmente no se sobrescribe: una actualización remota conflictiva se guarda como `*.nube-<hash>.md`. La ausencia de un elemento en el origen no elimina su archivo local. Las ediciones hechas en Obsidian no se fusionan de vuelta con la web en esta versión.
+Se pueden personalizar las asignaciones en `.vault-sync/config.json`, sin cambiar etiquetas ni relaciones de la web:
+
+```json
+"organization": {
+  "topic_areas": {"Fiscalidad": "Economía y finanzas", "Mi tema nuevo": "Mi área"},
+  "notebook_areas": {"identificador-del-cuaderno": "Mi área"}
+}
+```
+
+Los mapas enlazan conceptos de cada tema. Los cuadernos enlazan conceptos, fuentes y conversaciones; los conceptos enlazan relaciones y cuadernos de origen. Son enlaces `[[...]]` de Obsidian, con LaTeX y Mermaid conservados en Markdown.
+
+Los archivos tienen identificadores y nombres estables aunque cambie un título. La sincronización reorganiza las notas gestionadas en sus áreas y actualiza sus enlaces generados; comprueba los destinos antes de mover y no sobrescribe archivos ajenos. Solo retira carpetas vacías. Una nota editada localmente se traslada conservando su contenido: una actualización remota conflictiva se guarda como `*.nube-<hash>.md`. Los enlaces escritos a mano hacia rutas antiguas pueden necesitar actualización tras una reorganización. La ausencia de un elemento en el origen no elimina su archivo local. Las ediciones hechas en Obsidian no se fusionan de vuelta con la web en esta versión.
 
 `academia.vault_sync` permite importar una copia offline para probar el flujo:
 
